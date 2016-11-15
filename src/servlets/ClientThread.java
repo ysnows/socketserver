@@ -1,7 +1,6 @@
 package servlets;
 
 import com.google.gson.Gson;
-import db.Database;
 import model.Client;
 import model.SocketRequest;
 import model.SocketResult;
@@ -90,7 +89,6 @@ public class ClientThread extends Thread {
                                     }
                                     if (item.roomId == request.roomId) {
                                         String sql = "select * from cocos_gamer where roomid= '" + request.roomId + "'";
-                                        ResultSet resultSet = new Database().executeQuery(sql);
 
 
                                         //更改数据库->通知状态改变

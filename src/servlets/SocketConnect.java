@@ -1,11 +1,8 @@
 package servlets;
 
-import com.google.gson.Gson;
 import model.Client;
-import model.User;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
