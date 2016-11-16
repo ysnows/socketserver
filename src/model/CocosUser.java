@@ -9,9 +9,9 @@ import javax.persistence.*;
 @Table(name = "cocos_user", schema = "cocos", catalog = "")
 public class CocosUser {
     private int id;
-    private String phone;
     private String pwd;
     private String userName;
+    private String phone;
     private String nickName;
     private String wxId;
     private String addTime;

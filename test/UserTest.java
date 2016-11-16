@@ -48,7 +48,7 @@ public class UserTest {
 //      query.setParameter("roomId", 7);
 //      int count = ((Long) query.iterate().next()).intValue();
 
-        List list = session.createQuery("from CocosGamer as gamer join CocosUser as user on gamer.uid=user.id").list();
+        List list = session.createQuery(" from CocosGamer as gamer where gamer.roomid=:roomid").setParameter("roomid", 7).list();
         System.out.println(new Gson().toJson(list));
 
 

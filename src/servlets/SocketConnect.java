@@ -23,7 +23,7 @@ public class SocketConnect extends javax.servlet.http.HttpServlet {
 //        log(userJson);
 //        out.print(userJson);
 
-        ServerSocket ss = new ServerSocket(3302);
+        ServerSocket ss = new ServerSocket(10012);
         ClientThread clientThread = new ClientThread();
         clientThread.start();
 
@@ -31,7 +31,6 @@ public class SocketConnect extends javax.servlet.http.HttpServlet {
 
         while (true) {
             // 开始接收客户端的连接
-
             Socket socket = ss.accept();
             System.out.println("new client ~");
             clientThread.addClient(new Client(socket));

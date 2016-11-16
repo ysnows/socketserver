@@ -1,9 +1,7 @@
 package servlets;
 
 import com.google.gson.Gson;
-import model.Client;
-import model.SocketRequest;
-import model.SocketResult;
+import model.*;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -101,21 +99,15 @@ public class ClientThread extends Thread {
                                     if (item.roomId == request.roomId) {
                                         //更改玩家的游戏状态->通知状态改变
                                         transaction = session.beginTransaction();
-                                        Query query = session.createQuery("update CocosGamer gamer set gamer.status=1 where gamer.uid=:uid and gamer.roomid=:roomId");
-                                        query.executeUpdate();
+                                        session.createQuery("update CocosGamer gamer set gamer.status=1 where gamer.uid=:uid and gamer.roomid=:roomId").setParameter("uid", request.uid).setParameter("roomId", request.roomId).executeUpdate();
                                         transaction.commit();
-
-                                        transaction = session.beginTransaction();
-                                        List list = session.createQuery("from CocosGamer ").list();
-
-
-                                        transaction.commit();
-
                                         //获取房间中所有玩家信息并返回
-                                        session.createQuery("");
-
-
-                                        if (true) {//房间中所有人都准备了，那就开始，并结束循环
+                                        transaction = session.beginTransaction();
+                                        List list = session.createQuery(" from CocosGamer as gamer where gamer.roomid=:roomid").setParameter("roomid", request.roomId).list();
+                                        Short personCount = session.get(CocosRoom.class, request.roomId).getPersonCount();
+                                        transaction.commit();
+                                        sendMessage(socket, new Gson().toJson(new SocketResult<List<CocosGamer>>(200, "准备成功", list)));
+                                        if (list.size() >= personCount) {//房间中所有人都准备了，那就开始，并结束循环
                                             break;
                                         }
                                     }
@@ -145,7 +137,6 @@ public class ClientThread extends Thread {
 //                    } catch (SQLException e) {
 //                        e.printStackTrace();
 //                    }
-
                 }
                 sleep(10);
             } catch (IOException e) {
