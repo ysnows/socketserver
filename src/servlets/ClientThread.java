@@ -4,6 +4,11 @@ import com.google.gson.Gson;
 import model.Client;
 import model.SocketRequest;
 import model.SocketResult;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.query.Query;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,11 +17,15 @@ import java.net.Socket;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 // 继承Thread线程类
 public class ClientThread extends Thread {
     // 客户列表
     private ArrayList<Client> clients = new ArrayList<Client>();
+    private SessionFactory sessionFactory;
+    private Session session;
+    private Transaction transaction;
 
     // 添加客户
     public void addClient(Client client) {
@@ -38,6 +47,9 @@ public class ClientThread extends Thread {
 
     @Override
     public void run() {
+        sessionFactory = new Configuration().configure().buildSessionFactory();
+        session = sessionFactory.openSession();
+
         while (true) {
             try {
                 for (int i = clients.size() - 1; i >= 0; i--) {
@@ -77,9 +89,8 @@ public class ClientThread extends Thread {
                                 break;
                             case "exit":
                                 //退出
-//                                this.removeClient(client);
+                                this.removeClient(client);
                                 break;
-
                             case "ok":
                                 //点击开始 uid roomid
                                 //向同一房间内的所有socket发送状态
@@ -88,10 +99,22 @@ public class ClientThread extends Thread {
                                         continue;
                                     }
                                     if (item.roomId == request.roomId) {
-                                        String sql = "select * from cocos_gamer where roomid= '" + request.roomId + "'";
+                                        //更改玩家的游戏状态->通知状态改变
+                                        transaction = session.beginTransaction();
+                                        Query query = session.createQuery("update CocosGamer gamer set gamer.status=1 where gamer.uid=:uid and gamer.roomid=:roomId");
+                                        query.executeUpdate();
+                                        transaction.commit();
+
+                                        transaction = session.beginTransaction();
+                                        List list = session.createQuery("from CocosGamer ").list();
 
 
-                                        //更改数据库->通知状态改变
+                                        transaction.commit();
+
+                                        //获取房间中所有玩家信息并返回
+                                        session.createQuery("");
+
+
                                         if (true) {//房间中所有人都准备了，那就开始，并结束循环
                                             break;
                                         }

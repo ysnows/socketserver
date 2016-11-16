@@ -5,9 +5,12 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.query.Query;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.List;
 
 /**
  * Created by xianguangjin on 2016/11/15.
@@ -37,11 +40,16 @@ public class UserTest {
     @Test
     public void test() {
 
-//        session.save(user);
+//      session.save(user);
+//      CocosUser cocosUser = session.get(CocosUser.class, 1);
+//      String hql = "select count (*) from CocosGamer where roomid=:roomId";
 
-        CocosUser cocosUser = session.get(CocosUser.class, 1);
-        System.out.println(new Gson().toJson(cocosUser));
+//      Query query = session.createQuery(hql);
+//      query.setParameter("roomId", 7);
+//      int count = ((Long) query.iterate().next()).intValue();
 
+        List list = session.createQuery("from CocosGamer as gamer join CocosUser as user on gamer.uid=user.id").list();
+        System.out.println(new Gson().toJson(list));
 
 
     }

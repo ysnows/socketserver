@@ -14,6 +14,7 @@ public class CocosGamer {
     private Short isBanker;
     private Short status;
 
+
     @Id
     @Column(name = "id")
     public int getId() {
@@ -43,6 +44,7 @@ public class CocosGamer {
     public void setUid(Integer uid) {
         this.uid = uid;
     }
+
 
     @Basic
     @Column(name = "is_banker")
