@@ -8,6 +8,7 @@ import java.net.Socket;
 
 /**
  * Created by xianguangjin on 2016/11/14.
+ *
  */
 public class SocketConnect extends javax.servlet.http.HttpServlet {
     protected void doPost(javax.servlet.http.HttpServletRequest request, javax.servlet.http.HttpServletResponse response) throws javax.servlet.ServletException, IOException {
