@@ -43,6 +43,9 @@ public class ClientThread extends Thread {
     }
 
 
+    /**
+     *
+     */
     @Override
     public void run() {
         sessionFactory = new Configuration().configure().buildSessionFactory();
@@ -116,6 +119,7 @@ public class ClientThread extends Thread {
                                 break;
                         }
                     } catch (Exception e) {
+                        sendMessage(socket,"请发送正确的指令--"+read);
                         System.out.println(e.getMessage());
                     }
 
