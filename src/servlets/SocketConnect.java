@@ -8,7 +8,6 @@ import java.net.Socket;
 
 /**
  * Created by xianguangjin on 2016/11/14.
- *
  */
 public class SocketConnect extends javax.servlet.http.HttpServlet {
     protected void doPost(javax.servlet.http.HttpServletRequest request, javax.servlet.http.HttpServletResponse response) throws javax.servlet.ServletException, IOException {
@@ -28,12 +27,9 @@ public class SocketConnect extends javax.servlet.http.HttpServlet {
         ClientThread clientThread = new ClientThread();
         clientThread.start();
 
-        System.out.println("server opened");
-
         while (true) {
             // 开始接收客户端的连接
             Socket socket = ss.accept();
-            System.out.println("new client ~");
             clientThread.addClient(new Client(socket));
         }
     }
