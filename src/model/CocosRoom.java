@@ -17,6 +17,7 @@ public class CocosRoom {
     private String addTime;
     private Integer ownerid;
     private Short roomStatus;
+    private String cards;
 
     @Id
     @Column(name = "id")
@@ -141,5 +142,15 @@ public class CocosRoom {
         result = 31 * result + (ownerid != null ? ownerid.hashCode() : 0);
         result = 31 * result + (roomStatus != null ? roomStatus.hashCode() : 0);
         return result;
+    }
+
+    @Basic
+    @Column(name = "cards")
+    public String getCards() {
+        return cards;
+    }
+
+    public void setCards(String cards) {
+        this.cards = cards;
     }
 }

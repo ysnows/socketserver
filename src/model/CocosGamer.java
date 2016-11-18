@@ -13,7 +13,7 @@ public class CocosGamer {
     private Integer uid;
     private Short isBanker;
     private Short status;
-
+    private String cards;
 
     @Id
     @Column(name = "id")
@@ -44,7 +44,6 @@ public class CocosGamer {
     public void setUid(Integer uid) {
         this.uid = uid;
     }
-
 
     @Basic
     @Column(name = "is_banker")
@@ -90,5 +89,15 @@ public class CocosGamer {
         result = 31 * result + (isBanker != null ? isBanker.hashCode() : 0);
         result = 31 * result + (status != null ? status.hashCode() : 0);
         return result;
+    }
+
+    @Basic
+    @Column(name = "cards")
+    public String getCards() {
+        return cards;
+    }
+
+    public void setCards(String cards) {
+        this.cards = cards;
     }
 }

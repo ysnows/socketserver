@@ -7,6 +7,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.query.Query;
+import org.hibernate.sql.Update;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -111,16 +112,30 @@ public class ClientThread extends Thread {
                                         transaction.commit();
                                         sendMessage(socket, new Gson().toJson(new SocketResult<List<CocosGamer>>(200, "准备成功", list)));
                                         if (list.size() >= personCount) {//房间中所有人都准备了，那就开始，并结束循环
+                                            transaction.begin();
+                                            //变更房间状态
+                                            session.createQuery("update CocosRoom room set room.roomStatus=1").executeUpdate();
+                                            transaction.commit();
                                             break;
                                         }
                                     }
                                 }
 
                                 break;
+                            case "getCard":
+                                //发牌，返回房间中所有人的牌
+
+
+                                break;
+                            default:
+                                sendMessage(socket, "请发送正确的指令--" + read);
+
+                                break;
+
 
                         }
                     } catch (Exception e) {
-                        sendMessage(socket,"请发送正确的指令--"+read);
+                        sendMessage(socket, "请发送正确的指令--" + read);
                         System.out.println(e.getMessage());
                     }
 
