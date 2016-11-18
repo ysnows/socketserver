@@ -83,9 +83,23 @@ public class UserTest {
             //添加至room的cards列表
             cocosRoom.setCards(gson.toJson(integers));
             //添加到gamer的用户表
-            CocosGamer cocosGamer = session.get(CocosGamer.class, 1);
-            integers = gson.fromJson( , new TypeToken<List<Integer>>() {
-            }.getType());
+            List<CocosGamer> list = session.createQuery("from CocosGamer as gamer where gamer.uid=:uid and gamer.roomid=:roomid").setParameter("uid", 1).setParameter("roomid", 7).list();
+            CocosGamer cocosGamer = (CocosGamer) list.get(0);
+
+            ArrayList<Integer> gamerIntegers;
+            if (!TextUtils.isEmpty(cocosGamer.getCards())) {
+                gamerIntegers = gson.fromJson(cocosGamer.getCards(), new TypeToken<List<Integer>>() {
+                }.getType());
+            } else {
+                gamerIntegers = new ArrayList<>();
+            }
+
+            gamerIntegers.add(s);
+            cocosGamer.setCards(gson.toJson(gamerIntegers));
+            //判断结果
+
+
+
 
         }
 
