@@ -7,8 +7,9 @@ import java.net.Socket;
  */
 public class Client {
     public Socket socket;
-    public int uid=0;
-    public int roomId=0;
+    public int uid = 0;
+    public int roomId = 0;
+
 
     public Client(Socket socket) {
         this.socket = socket;

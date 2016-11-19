@@ -11,9 +11,20 @@ public class CocosGamer {
     private int id;
     private Integer roomid;
     private Integer uid;
+    private Integer cash_pledge;
     private Short isBanker;
     private Short status;
     private String cards;
+
+    @Basic
+    @Column(name = "cash_pledge")
+    public Integer getCash_pledge() {
+        return cash_pledge;
+    }
+
+    public void setCash_pledge(Integer cash_pledge) {
+        this.cash_pledge = cash_pledge;
+    }
 
     @Id
     @Column(name = "id")

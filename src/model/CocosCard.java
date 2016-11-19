@@ -3,14 +3,14 @@ package model;
 import javax.persistence.*;
 
 /**
- * Created by xianguangjin on 2016/11/18.
+ * Created by xianguangjin on 2016/11/19.
  */
 @Entity
 @Table(name = "cocos_card", schema = "cocos", catalog = "")
 public class CocosCard {
     private int id;
     private short type;
-    private int num;
+    private double num;
 
     @Id
     @Column(name = "id")
@@ -34,11 +34,11 @@ public class CocosCard {
 
     @Basic
     @Column(name = "num")
-    public int getNum() {
+    public double getNum() {
         return num;
     }
 
-    public void setNum(int num) {
+    public void setNum(double num) {
         this.num = num;
     }
 
@@ -51,16 +51,19 @@ public class CocosCard {
 
         if (id != cocosCard.id) return false;
         if (type != cocosCard.type) return false;
-        if (num != cocosCard.num) return false;
+        if (Double.compare(cocosCard.num, num) != 0) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        int result = id;
+        int result;
+        long temp;
+        result = id;
         result = 31 * result + (int) type;
-        result = 31 * result + num;
+        temp = Double.doubleToLongBits(num);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
         return result;
     }
 }

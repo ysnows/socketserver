@@ -10,9 +10,9 @@
         <!-- <property name="hbm2ddl.auto">update</property> -->
         <property name="show_sql">true</property>
         <property name="format_sql">true</property>
+
         <property name="connection.username">ysnows</property>
         <property name="connection.password">531315</property>
-
 
         <mapping class="model.CocosFeedback"/>
         <mapping class="model.CocosGamer"/>
