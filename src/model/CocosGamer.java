@@ -11,9 +11,20 @@ public class CocosGamer {
     private int id;
     private Integer roomid;
     private Integer uid;
+    private Integer cash_pledge;
     private Short isBanker;
     private Short status;
+    private String cards;
 
+    @Basic
+    @Column(name = "cash_pledge")
+    public Integer getCash_pledge() {
+        return cash_pledge;
+    }
+
+    public void setCash_pledge(Integer cash_pledge) {
+        this.cash_pledge = cash_pledge;
+    }
 
     @Id
     @Column(name = "id")
@@ -44,7 +55,6 @@ public class CocosGamer {
     public void setUid(Integer uid) {
         this.uid = uid;
     }
-
 
     @Basic
     @Column(name = "is_banker")
@@ -90,5 +100,15 @@ public class CocosGamer {
         result = 31 * result + (isBanker != null ? isBanker.hashCode() : 0);
         result = 31 * result + (status != null ? status.hashCode() : 0);
         return result;
+    }
+
+    @Basic
+    @Column(name = "cards")
+    public String getCards() {
+        return cards;
+    }
+
+    public void setCards(String cards) {
+        this.cards = cards;
     }
 }

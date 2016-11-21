@@ -4,8 +4,6 @@
         "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
 <hibernate-configuration>
     <session-factory>
-        <property name="connection.username">ysnows</property>
-        <property name="connection.password">531315</property>
         <property name="connection.driver_class">com.mysql.jdbc.Driver</property>
         <property name="connection.url">jdbc:mysql://123.57.237.129:3306/cocos</property>
         <!-- DB schema will be updated if needed -->
@@ -13,6 +11,8 @@
         <property name="show_sql">true</property>
         <property name="format_sql">true</property>
 
+        <property name="connection.username">ysnows</property>
+        <property name="connection.password">531315</property>
 
         <mapping class="model.CocosFeedback"/>
         <mapping class="model.CocosGamer"/>
@@ -23,8 +23,8 @@
         <mapping class="model.CocosSign"/>
         <mapping class="model.CocosSms"/>
         <mapping class="model.CocosUser"/>
+        <mapping class="model.CocosCard"/>
         <!--<property name="hbm2ddl.auto">false</property>-->
-
 
     </session-factory>
 </hibernate-configuration>

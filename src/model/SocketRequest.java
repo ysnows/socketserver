@@ -8,6 +8,7 @@ public class SocketRequest {
     public String action;
     public int uid;
     public int roomId;
+    public int cashPledge;
 
 
 }

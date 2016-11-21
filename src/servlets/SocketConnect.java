@@ -23,6 +23,7 @@ public class SocketConnect extends javax.servlet.http.HttpServlet {
 //        log(userJson);
 //        out.print(userJson);
 
+
         ServerSocket ss = new ServerSocket(10012);
         ClientThread clientThread = new ClientThread();
         clientThread.start();
