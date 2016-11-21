@@ -14,13 +14,15 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
 // 继承Thread线程类
 public class ClientThread extends Thread {
-    // 客户列表
-    private ArrayList<Client> clients = new ArrayList<Client>();
+
+    private HashMap<Integer, ArrayList<Client>> clientsMap = new HashMap<>();//以房间号组织client
+    private ArrayList<Client> clients = new ArrayList<Client>();//所有的client
     private SessionFactory sessionFactory;
     private Session session;
     private Transaction transaction;
@@ -30,7 +32,6 @@ public class ClientThread extends Thread {
     private Random random = new Random();
     private Gson gson = new Gson();
     private List gamers;
-
 
     // 添加客户
     public void addClient(Client client) {
@@ -49,6 +50,63 @@ public class ClientThread extends Thread {
         os.write(data.getBytes("UTF-8"));
     }
 
+    //添加到room的map中
+    public void addToClientsMap(Client client) {
+        ArrayList<Client> clients = clientsMap.get(client.roomId);
+        if (clients == null) {
+            clients = new ArrayList<>();
+            clientsMap.put(client.roomId, clients);
+        }
+
+        if (!clients.contains(client)) {
+            clients.add(client);
+        }
+    }
+
+    //room的map中删除
+    public void removeFromClientsMap(Client client) {
+        ArrayList<Client> clients = clientsMap.get(client.roomId);
+        if (clients.contains(client)) {
+            clients.remove(client);
+        }
+    }
+
+    //向房间中所有人发送消息
+    public void sendRoomMsg(int roomId, String msg, Object data) throws IOException {
+        for (Client client : clientsMap.get(roomId)) {
+            sendMessage(client.socket, gson.toJson(new SocketResult<>(200, msg, data)));
+        }
+    }
+
+    //向房间中所有人发送消息
+    public void sendRoomMsg(int roomId, String msg) throws IOException {
+        for (Client client : clientsMap.get(roomId)) {
+            sendMessage(client.socket, gson.toJson(new SocketResult<>(200, msg)));
+        }
+    }
+
+    /**
+     * 获取返回的json字符串
+     *
+     * @param code
+     * @param msg
+     * @return
+     */
+    public String getResultMsg(int code, String msg) {
+        return gson.toJson(new SocketResult(code, msg));
+    }
+
+    /**
+     * 获取返回的json字符串
+     *
+     * @param code
+     * @param msg
+     * @param data
+     * @return
+     */
+    public String getResultMsg(int code, String msg, Object data) {
+        return gson.toJson(new SocketResult(code, msg, data));
+    }
 
     /**
      *
@@ -57,64 +115,54 @@ public class ClientThread extends Thread {
     public void run() {
         sessionFactory = new Configuration().configure().buildSessionFactory();
         session = sessionFactory.openSession();
-
         while (true) {
             try {
                 for (int i = clients.size() - 1; i >= 0; i--) {
                     Client client = clients.get(i);
                     // 获取客户端发来的数据
                     Socket socket = client.socket;
-                    InputStream is = socket.getInputStream();
-                    int len = is.available() + 1;
-                    byte[] buff = new byte[len];
-                    int flag = is.read(buff);
+                    int len = 1;
+                    String read = "";
+                    do {
+                        InputStream is = socket.getInputStream();
+                        len = is.available() + 1;
+                        byte[] buff = new byte[len];
+                        int flag = is.read(buff);
+                        read += new String(buff).trim();
 
-                    // read()返回-1，说明客户端的socket已断开
-//                    if (flag == -1) {
-//                        System.out.println("有客户断开连接~");
-//                        this.removeClient(socket);
-//                        break;
-//                    }
-
-                    // 输出接收到的数据
-
-                    String read = new String(buff).trim();
-//                    System.out.println(read);
+                    } while (len == 1);
+                    read = read.trim();
 
                     try {
                         SocketRequest request = new Gson().fromJson(read, SocketRequest.class);
+                        transaction = session.beginTransaction();
                         switch (request.action) {
                             case "login":
                                 //登录 uid
                                 client.uid = request.uid;
-                                sendMessage(socket, new Gson().toJson(new SocketResult(200, "登录成功")));
+                                sendMessage(socket, getResultMsg(200, "登录成功"));
                                 break;
                             case "enterRoom":
                                 //调用完 http 的进入房间接口成功后调用这个 socket 接口
                                 client.uid = request.uid;
                                 client.roomId = request.roomId;
-                                transaction = session.beginTransaction();
-                                gamers = session.createQuery("from CocosGamer where roomid=:roomid").setParameter("roomid", client.roomId).list();
-                                transaction.commit();
+                                addToClientsMap(client);
+                                gamers = getGamers(client.roomId);
                                 //向房间中所有人反馈
-                                for (Client item : clients) {
-                                    if (item.roomId == client.roomId && client.uid != item.uid) {
-                                        System.out.println(gson.toJson(gamers));
-                                        sendMessage(item.socket, gson.toJson(new SocketResult<>(200, "有人进入房间", gamers)));
-                                    }
-                                }
-
-                                sendMessage(socket, new Gson().toJson(new SocketResult(200, "进入成功")));
+                                sendRoomMsg(client.roomId, "有人进入房间", gamers);
+                                sendMessage(socket, getResultMsg(200, "进入成功"));
                                 break;
                             case "exit":
                                 //退出
+                                sendMessage(socket, new Gson().toJson(new SocketResult(200, "退出成功")));
                                 this.removeClient(client);
+                                removeFromClientsMap(client);
                                 break;
                             case "pledge":
                                 //押金->成功后结算押金
                                 transaction = session.beginTransaction();
                                 session.createQuery("update CocosGamer gamer set gamer.cash_pledge=:cash_pledge").setParameter("cash_pledge", request.cashPledge).executeUpdate();
-                                gamers = session.createQuery("from CocosGamer where roomid=:roomid").setParameter("roomid", client.roomId).list();
+                                gamers = getGamers(client.roomId);
                                 transaction.commit();
 
                                 //向房间中所有人反馈
@@ -127,32 +175,21 @@ public class ClientThread extends Thread {
                                 sendMessage(socket, new Gson().toJson(new SocketResult(200, "抵押成功")));
                                 break;
                             case "ok":
-                                //点击开始 uid roomid
+                                //点击开始
                                 //向同一房间内的所有socket发送状态
                                 //更改玩家的游戏状态->通知状态改变
-                                transaction = session.beginTransaction();
-                                session.createQuery("update CocosGamer gamer set gamer.status=1 where gamer.uid=:uid and gamer.roomid=:roomId").setParameter("uid", request.uid).setParameter("roomId", request.roomId).executeUpdate();
-                                transaction.commit();
+                                session.createQuery("update CocosGamer gamer set gamer.status=1 where gamer.uid=:uid and gamer.roomid=:roomId").setParameter("uid", client.uid).setParameter("roomId", client.roomId).executeUpdate();
                                 //获取房间中所有玩家信息并返回
-                                transaction = session.beginTransaction();
-                                gamers = session.createQuery(" from CocosGamer as gamer where gamer.roomid=:roomid").setParameter("roomid", request.roomId).list();
-                                Short personCount = session.get(CocosRoom.class, request.roomId).getPersonCount();
-                                transaction.commit();
+                                gamers = getGamers(client.roomId);
+                                Short personCount = session.get(CocosRoom.class, client.roomId).getPersonCount();
 
                                 //向房间中所有人反馈
-                                for (Client item : clients) {
-                                    if (item.roomId == client.roomId && client.uid != item.uid) {
-                                        System.out.println(gson.toJson(gamers));
-                                        sendMessage(item.socket, gson.toJson(new SocketResult<>(200, "有人准备", gamers)));
-                                    }
-                                }
+                                sendRoomMsg(200, "有人准备", gamers);
+                                sendMessage(socket, getResultMsg(200, "准备成功"));
 
-                                sendMessage(socket, new Gson().toJson(new SocketResult(200, "准备成功")));
-                                if (gamers.size() >= personCount) {//房间中所有人都准备了，那就开始，并结束循环
-                                    transaction.begin();
+                                if (gamers.size() >= personCount) {//房间中所有人都准备了，那就开始
                                     //变更房间状态
                                     session.createQuery("update CocosRoom room set room.roomStatus=1").executeUpdate();
-                                    transaction.commit();
                                     break;
                                 }
                                 break;
@@ -179,6 +216,7 @@ public class ClientThread extends Thread {
                                 sendMessage(socket, "请发送正确的指令--" + read);
                                 break;
                         }
+                        transaction.commit();
                     } catch (Exception e) {
                         sendMessage(socket, "请发送正确的指令--" + read);
                         System.out.println(e.getMessage());
@@ -212,6 +250,27 @@ public class ClientThread extends Thread {
         }
     }
 
+    /**
+     * 获取所有房间中所有玩家的数据
+     *
+     * @param roomId
+     */
+    private List getGamers(int roomId) {
+        return gamers = session.createQuery("from CocosGamer where roomid=:roomid").setParameter("roomid", roomId).list();
+    }
+
+    /**
+     * 获取Card
+     *
+     * @param client
+     * @param min
+     * @param max
+     * @param random
+     * @param gson
+     * @param integers
+     * @param cocosRoom
+     * @throws IOException
+     */
     private void getCard(Client client, int min, int max, Random random, Gson gson, ArrayList<Integer> integers, CocosRoom cocosRoom) throws IOException {
         int s = random.nextInt(max) % (max - min + 1) + min;
         if (!integers.contains(s)) {//如果这张牌没有发
@@ -296,5 +355,4 @@ public class ClientThread extends Thread {
             getCard(client, min, max, random, gson, integers, cocosRoom);
         }
     }
-
 }
